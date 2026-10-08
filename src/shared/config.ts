@@ -1,5 +1,5 @@
 import { plainToInstance } from 'class-transformer'
-import { IsString, validateSync } from 'class-validator'
+import { IsDate, IsString, validateSync } from 'class-validator'
 import dotenv from 'dotenv'
 import fs from 'fs'
 import path from 'path'
@@ -18,9 +18,9 @@ class ConfigSchema {
     @IsString()
     REFRESH_TOKEN_SECRET: string
     @IsString()
-    REFRESH_TOKEN_EXPRIES_IN: string
+    REFRESH_TOKEN_EXPIRES_IN: string
     @IsString()
-    ACCESS_TOKEN__EXPRIES_IN: string
+    ACCESS_TOKEN_EXPIRES_IN: string
 }
 
 const configServer = plainToInstance(ConfigSchema, process.env)

@@ -6,7 +6,6 @@ import { SharedModule } from './shared/shared.module.js'
 import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './routes/auth/auth.module.js'
 import { APP_INTERCEPTOR } from '@nestjs/core'
-
 @Module({
   imports: [
     ConfigModule.forRoot({

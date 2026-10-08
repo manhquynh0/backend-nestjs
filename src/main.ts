@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core'
 import { AppModule } from './app.module.js'
 import './shared/config.js'
+import { LoggingInterceptor } from './shared/interceptors/logging.interceptor.js'
 import { UnprocessableEntityException, ValidationPipe } from '@nestjs/common'
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
@@ -13,7 +14,6 @@ async function bootstrap() {
         enableImplicitConversion: true
       },
       exceptionFactory: (validatorErrors) => {
-        console.log(validatorErrors)
         return new UnprocessableEntityException(validatorErrors.map((error) => ({
           field: error.property,
           error: Object.values(error.constraints ?? {}).join(',')
@@ -22,6 +22,7 @@ async function bootstrap() {
 
     })
   )
+  app.useGlobalInterceptors(new LoggingInterceptor())
   await app.listen(process.env.PORT ?? 3000)
 }
 await bootstrap()
