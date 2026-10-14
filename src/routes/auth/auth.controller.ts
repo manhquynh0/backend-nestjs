@@ -30,6 +30,7 @@ export class AuthController {
   async login(@Body() body: LoginBodyDTO) {
     return new LoginResDTO(await this.authService.login(body))
   }
+
   @UseGuards(AccessTokenGuard)
   @Post('refreshToken')
   async refreshToken(@Body() body: RefreshTokenBodyDTO) {
