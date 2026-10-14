@@ -4,6 +4,7 @@ import { PrismaService } from '~/shared/services/prisma.service.js'
 import { Prisma } from '~/generated/prisma/client.js'
 import { TokenService } from '~/shared/services/token.service.js'
 import envConfig from '~/shared/config.js'
+import { isNotFoundError, isUniqueConstraintError } from '~/shared/helpers.js'
 @Injectable()
 export class AuthService {
     constructor(
@@ -24,7 +25,7 @@ export class AuthService {
             return user
         }
         catch (error) {
-            if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+            if (isUniqueConstraintError(error)) {
                 throw new ConflictException('Email already exists')
             }
             throw error
@@ -62,18 +63,26 @@ export class AuthService {
         return { accessToken, refreshToken }
     }
     async refreshToken(refreshToken: string) {
-        const tokenInDb = await this.prismaService.refreshToken.findUnique({
-            where: { token: refreshToken }
-        })
-        if (!tokenInDb) {
+        try {
+            const tokenInDb = await this.prismaService.refreshToken.findUnique({
+                where: { token: refreshToken }
+            })
+            if (!tokenInDb) {
+                throw new UnauthorizedException('Refresh token is invalid or has been revoked')
+            }
+            const decodedToken = await this.tokenService.verifyRefreshToken(refreshToken)
+            const user = await this.prismaService.user.findUniqueOrThrow({
+                where: { id: decodedToken.userId }
+            })
+            const accessToken = await this.tokenService.signAccessToken({ userId: user.id })
+            return { accessToken }
+        }
+        catch (error) {
+            if (isNotFoundError(error)) {
+                throw new NotFoundException('User not found')
+            }
             throw new UnauthorizedException('Refresh token is invalid or has been revoked')
         }
-        const decodedToken = await this.tokenService.verifyRefreshToken(refreshToken)
-        const user = await this.prismaService.user.findUniqueOrThrow({
-            where: { id: decodedToken.userId }
-        })
-        const accessToken = await this.tokenService.signAccessToken({ userId: user.id })
-        return { accessToken }
     }
 
 
