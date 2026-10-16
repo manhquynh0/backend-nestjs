@@ -23,8 +23,8 @@ export class AuthenticationGuard implements CanActivate {
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
         const authTypeValue = this.reflector.getAllAndOverride(AUTH_TYPE_KEY, [
-            context.getHandler(),
-            context.getClass(),
+            context.getHandler(), //  Đại diện cho hàm API đang được gọi (ví dụ hàm getPosts()).
+            context.getClass(), // Đại diện cho Class Controller chứa hàm API đó.
         ]) ?? { authTypes: [AuthType.None], options: { condition: ConditionGuard.Or } }
 
         const guards = authTypeValue.authTypes.map((authType: AuthType) => this.authTypeGuardMap[authType])
