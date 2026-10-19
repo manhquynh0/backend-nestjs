@@ -3,11 +3,12 @@ import { AppController } from './app.controller.js'
 import { AppService } from './app.service.js'
 import { SharedModule } from './shared/shared.module.js'
 import { ConfigModule } from '@nestjs/config'
-import { APP_INTERCEPTOR } from '@nestjs/core'
+import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core'
 import { AuthModule } from './routes/auth/auth.module.js'
 import { APP_PIPE } from '@nestjs/core'
-import { ZodSerializationException, ZodValidationPipe } from 'nestjs-zod'
+import { ZodSerializerInterceptor, ZodValidationPipe } from 'nestjs-zod'
 import { CustomZodValidationPipe } from './shared/pipes/custom-zod-validtion.pipe.js'
+import { CatchEverythingFilter } from './shared/filters/catch-everything.filter.js'
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -25,7 +26,11 @@ import { CustomZodValidationPipe } from './shared/pipes/custom-zod-validtion.pip
     },
     {
       provide: APP_INTERCEPTOR,
-      useClass: ZodSerializationException
+      useClass: ZodSerializerInterceptor
+    },
+    {
+      provide: APP_FILTER,
+      useClass: CatchEverythingFilter
     }
   ],
 })
