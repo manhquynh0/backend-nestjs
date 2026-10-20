@@ -28,10 +28,10 @@ import { CatchEverythingFilter } from './shared/filters/catch-everything.filter.
       provide: APP_INTERCEPTOR,
       useClass: ZodSerializerInterceptor
     },
-    {
-      provide: APP_FILTER,
-      useClass: CatchEverythingFilter
-    }
+    // {
+    //   provide: APP_FILTER,
+    //   useClass: CatchEverythingFilter
+    // }
   ],
 })
 export class AppModule { }

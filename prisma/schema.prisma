@@ -112,7 +112,7 @@ model UserTranslation {
 
 model VerificationCode {
   id    Int                  @id @default(autoincrement())
-  email String
+  email String               @unique
   code  String
   type  VerificationCodeType
 
