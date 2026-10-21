@@ -113,7 +113,7 @@ model UserTranslation {
 model VerificationCode {
   id    Int                  @id @default(autoincrement())
   email String               @unique
-  code  String
+  code  String               @unique
   type  VerificationCodeType
 
   expiresAt DateTime
