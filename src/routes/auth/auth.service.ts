@@ -4,7 +4,7 @@ import { RolesService } from './roles.service.js'
 import { TokenService } from '~/shared/services/token.service.js'
 import { HashsingService } from '~/shared/services/hashsing.service.js'
 import { isUniqueConstraintError, generateOTP } from '~/shared/helpers.js'
-import { RegisterBodyType, SendOtpBodyType } from './auth.model.js'
+import { RegisterBodyType, SendOtpBodyType, LoginBodyType } from './auth.model.js'
 import { AuthRepository } from './auth.repo.js'
 import { SharedUserRepo } from "~/shared/reposistory/shared-user-repo.js"
 import ms, { StringValue } from 'ms'
@@ -12,6 +12,7 @@ import envConfig from '~/shared/config.js'
 import { addMilliseconds } from 'date-fns'
 import { TypeOfVerificationCode } from "~/shared/constanst/auth.constant.js"
 import { BrevoEmailService } from "~/shared/services/BrevoEmail.service.js"
+import { AccessTokenPayLoadCreate } from '~/shared/types/token.type.js'
 @Injectable()
 export class AuthService {
     constructor(private readonly prismaService: PrismaService,
@@ -70,5 +71,55 @@ export class AuthService {
         })
         return verificationCode
 
+    }
+    async login(body: LoginBodyType, clientInfo: { ip: string; userAgent: string }) {
+        try {
+            const { email, password } = body
+            const user = await this.authRepository.findUniqueUserWithRole({ email })
+            if (!user) {
+                throw new BadRequestException("Invalid Email")
+            }
+            const isPasswordValid = await this.hashsingService.compare(password, user.password)
+            if (!isPasswordValid) {
+                throw new BadRequestException("Invalid Password")
+            }
+            const device = await this.authRepository.createDevice({
+                userId: user.id,
+                ip: clientInfo.ip,
+                userAgent: clientInfo.userAgent
+            })
+            return this.generateTokens({
+                userId: user.id,
+                roleId: user.roleId,
+                deviceId: device.id,
+                roleName: user.role.name
+            })
+        } catch (error) {
+            throw error
+        }
+    }
+    async generateTokens(payload: AccessTokenPayLoadCreate) {
+        const [accessToken, refreshToken] = await Promise.all([
+            this.tokenService.signAccessToken({
+                userId: payload.userId,
+                roleId: payload.roleId,
+                roleName: payload.roleName,
+                deviceId: payload.deviceId
+            }),
+            this.tokenService.signRefreshToken({
+                userId: payload.userId
+            })
+        ])
+        const decodedRefreshToken = await this.tokenService.verifyRefreshToken(refreshToken)
+        if (!decodedRefreshToken) {
+            throw new BadRequestException("Invalid Refresh Token")
+        }
+        await this.authRepository.createRefreshToken({
+            userId: decodedRefreshToken.userId,
+            token: refreshToken,
+            expiresAt: addMilliseconds(new Date(), ms(envConfig.REFRESH_TOKEN_EXPIRES_IN as StringValue)),
+            deviceId: payload.deviceId as number
+        })
+        return { accessToken, refreshToken }
     }
 }

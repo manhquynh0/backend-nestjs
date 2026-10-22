@@ -8,6 +8,18 @@ datasource db {
   provider = "postgresql"
 }
 
+model Device {
+  id            Int            @id @default(autoincrement())
+  userId        Int
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userAgent     String
+  ip            String
+  lastActive    DateTime       @default(now())
+  createdAt     DateTime       @default(now())
+  isActive      Boolean        @default(true)
+  refreshTokens RefreshToken[]
+}
+
 model Language {
   id   Int    @id @default(autoincrement())
   name String
@@ -39,11 +51,10 @@ model User {
   status      UserStatus @default(ACTIVE)
   roleId      Int
   role        Role       @relation("UserRole", fields: [roleId], references: [id])
-
   createdById Int?
-  createdBy   User? @relation("UserCreatedBy", fields: [createdById], references: [id])
+  createdBy   User?      @relation("UserCreatedBy", fields: [createdById], references: [id])
   updatedById Int?
-  updatedBy   User? @relation("UserUpdatedBy", fields: [updatedById], references: [id])
+  updatedBy   User?      @relation("UserUpdatedBy", fields: [updatedById], references: [id])
 
   deletedAt DateTime?
   createdAt DateTime  @default(now())
@@ -89,6 +100,7 @@ model User {
   updatedBrandTranslations    BrandTranslation[]    @relation("BrandTranslationUpdatedBy")
   createdOrders               Order[]               @relation("OrderCreatedBy")
   updatedOrders               Order[]               @relation("OrderUpdatedBy")
+  devices                     Device[]
 }
 
 model UserTranslation {
@@ -124,9 +136,11 @@ model VerificationCode {
 }
 
 model RefreshToken {
-  token  String @id
-  userId Int
-  user   User   @relation(fields: [userId], references: [id])
+  token    String  @id
+  userId   Int
+  user     User    @relation(fields: [userId], references: [id])
+  deviceId Int?
+  device   Device? @relation(fields: [deviceId], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   expiresAt DateTime
   createdAt DateTime @default(now())

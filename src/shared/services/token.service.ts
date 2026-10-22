@@ -1,17 +1,18 @@
 import { Injectable } from '@nestjs/common'
-import { JwtService, JwtSignOptions } from '@nestjs/jwt'
+import { JwtService } from '@nestjs/jwt'
 import envConfig from '~/shared/config.js'
+import { AccessTokenPayLoadCreate, RefreshTokenPayLoadCreate } from '~/shared/types/token.type.js'
 
 @Injectable()
 export class TokenService {
-  constructor(private readonly jwtService: JwtService) {}
-  signAccessToken(payload: { userId: number }) {
+  constructor(private readonly jwtService: JwtService) { }
+  signAccessToken(payload: AccessTokenPayLoadCreate) {
     return this.jwtService.sign(payload, {
       secret: envConfig.ACCESS_TOKEN_SECRET,
       expiresIn: envConfig.ACCESS_TOKEN_EXPIRES_IN as any,
     })
   }
-  signRefreshToken(payload: { userId: number }) {
+  signRefreshToken(payload: RefreshTokenPayLoadCreate) {
     return this.jwtService.sign(payload, {
       secret: envConfig.REFRESH_TOKEN_SECRET,
       expiresIn: envConfig.REFRESH_TOKEN_EXPIRES_IN as any,
