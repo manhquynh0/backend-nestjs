@@ -83,11 +83,25 @@ export class AuthService {
             if (!isPasswordValid) {
                 throw new BadRequestException("Invalid Password")
             }
-            const device = await this.authRepository.createDevice({
+            let device = await this.authRepository.findDevice({
                 userId: user.id,
                 ip: clientInfo.ip,
                 userAgent: clientInfo.userAgent
             })
+            if (!device) {
+                device = await this.authRepository.createDevice({
+                    userId: user.id,
+                    ip: clientInfo.ip,
+                    userAgent: clientInfo.userAgent,
+                })
+            }
+            else {
+                device = await this.authRepository.updateDevice(device.id, {
+                    userId: user.id,
+                    ip: clientInfo.ip,
+                    userAgent: clientInfo.userAgent
+                })
+            }
             return this.generateTokens({
                 userId: user.id,
                 roleId: user.roleId,

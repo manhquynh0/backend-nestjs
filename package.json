@@ -44,6 +44,7 @@
     "nestjs-zod": "^5.5.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
+    "ua-parser-js": "^1.0.41",
     "zod": "^4.6.7"
   },
   "devDependencies": {

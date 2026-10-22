@@ -56,4 +56,20 @@ export class AuthRepository {
             }
         })
     }
+    async findDevice(payload: Pick<DeviceType, 'userId' | 'ip' | 'userAgent'> & Partial<Pick<DeviceType, 'lastActive' | 'isActive'>>) {
+        return this.prismaService.device.findFirst({
+            where: {
+                userId: payload.userId,
+                ip: payload.ip,
+            }
+        })
+    }
+    async updateDevice(id: number, payload: Pick<DeviceType, 'userId' | 'ip' | 'userAgent'> & Partial<Pick<DeviceType, 'lastActive' | 'isActive'>>) {
+        return this.prismaService.device.update({
+            where: {
+                id
+            },
+            data: payload
+        })
+    }
 }
