@@ -1,10 +1,10 @@
-import { BadRequestException, ConflictException, Injectable } from '@nestjs/common'
+import { BadRequestException, ConflictException, Injectable, UnauthorizedException } from '@nestjs/common'
 import { PrismaService } from '~/shared/services/prisma.service.js'
 import { RolesService } from './roles.service.js'
 import { TokenService } from '~/shared/services/token.service.js'
 import { HashsingService } from '~/shared/services/hashsing.service.js'
 import { isUniqueConstraintError, generateOTP } from '~/shared/helpers.js'
-import { RegisterBodyType, SendOtpBodyType, LoginBodyType } from './auth.model.js'
+import { RegisterBodyType, SendOtpBodyType, LoginBodyType, RefreshTokenBodyType } from './auth.model.js'
 import { AuthRepository } from './auth.repo.js'
 import { SharedUserRepo } from "~/shared/reposistory/shared-user-repo.js"
 import ms, { StringValue } from 'ms'
@@ -136,4 +136,55 @@ export class AuthService {
         })
         return { accessToken, refreshToken }
     }
+    async refreshToken(body: RefreshTokenBodyType, clientInfo: { ip: string; userAgent: string }) {
+        try {
+            // 1. Xác thực Refresh Token do client gửi lên
+            // Nếu token sai chữ ký hoặc hết hạn, jwtService sẽ throw lỗi và nhảy vào khối catch
+            const { userId } = await this.tokenService.verifyRefreshToken(body.refreshToken)
+
+            // 2. Tìm token này trong database
+            // Mục đích: Kiểm tra xem token này còn tồn tại hay đã bị xóa/thu hồi trước đó
+            const refreshTokenIndb = await this.authRepository.findUniqueRefreshToken({
+                token: body.refreshToken
+            })
+
+            // 3. Nếu không tìm thấy trong database:
+            // Nghĩa là token này đã được sử dụng rồi (đã bị xóa ở lần refresh trước)
+            // hoặc đã bị admin thu hồi -> chặn lại ngay (Cơ chế Reuse Detection)
+            if (!refreshTokenIndb) {
+                throw new UnauthorizedException("RefreshToken has been used")
+            }
+
+            // 4. Lấy thông tin cần thiết từ record trong DB
+            const { deviceId, user: { roleId, name: roleName } } = refreshTokenIndb
+
+            // 5. Chuẩn bị Promise cập nhật thông tin thiết bị (IP, User-Agent mới nhất)
+            const $updateDevice = this.authRepository.updateDevice(deviceId as number, {
+                userId: userId,
+                ip: clientInfo.ip,
+                userAgent: clientInfo.userAgent,
+            })
+
+            // 6. Chuẩn bị Promise xóa Refresh Token cũ (Refresh Token Rotation)
+            const $deleteRefreshToken = this.authRepository.deleteRefreshToken(body.refreshToken)
+
+            // 7. Tạo cặp Token mới (AccessToken và RefreshToken mới)
+            const $tokens = this.generateTokens({
+                userId,
+                roleId,
+                roleName,
+                deviceId: deviceId ?? undefined
+            })
+
+            // 8. Chạy song song cả 3 tác vụ bất đồng bộ để tối ưu hiệu năng (Performance)
+            const [_, __, tokens] = await Promise.all([$updateDevice, $deleteRefreshToken, $tokens])
+
+            // 9. Trả về cặp token mới { accessToken, refreshToken } cho client
+            return tokens
+
+        } catch (error) {
+            throw error
+        }
+    }
+
 }

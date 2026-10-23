@@ -58,7 +58,7 @@ export const RefreshTokenResSchema = LoginResSchema
 export const RefreshTokenSchema = z.object({
     token: z.string(),
     userId: z.number(),
-    deviceId: z.number(),
+    deviceId: z.number().nullable(),
     expiresAt: z.date(),
     createdAt: z.date()
 })

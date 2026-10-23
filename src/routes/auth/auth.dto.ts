@@ -7,7 +7,7 @@ export class RegisterResDTO extends createZodDto(RegisterResSchema) { }
 export class SendOtpDTO extends createZodDto(SendOtpBodySchema) { }
 export class LoginDTO extends createZodDto(LoginBodySchema) { }
 export class LoginResDTO extends createZodDto(LoginResSchema) { }
-export class RefreshTokenDTO extends createZodDto(RefreshTokenBodySchema) { }
+export class RefreshTokenBodyDTO extends createZodDto(RefreshTokenBodySchema) { }
 export class RefreshTokenResDTO extends createZodDto(RefreshTokenResSchema) { }
 export class LogoutDTO extends createZodDto(LogoutBodySchema) { }
 export class MessageResDTO extends createZodDto(MessageResSchema) { }
