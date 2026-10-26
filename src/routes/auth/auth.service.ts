@@ -1,10 +1,10 @@
-import { BadRequestException, ConflictException, Injectable, UnauthorizedException } from '@nestjs/common'
+import { BadRequestException, ConflictException, HttpException, Injectable, UnauthorizedException } from '@nestjs/common'
 import { PrismaService } from '~/shared/services/prisma.service.js'
 import { RolesService } from './roles.service.js'
 import { TokenService } from '~/shared/services/token.service.js'
 import { HashsingService } from '~/shared/services/hashsing.service.js'
 import { isUniqueConstraintError, generateOTP } from '~/shared/helpers.js'
-import { RegisterBodyType, SendOtpBodyType, LoginBodyType, RefreshTokenBodyType } from './auth.model.js'
+import { RegisterBodyType, SendOtpBodyType, LoginBodyType, RefreshTokenBodyType, LogoutBodyType } from './auth.model.js'
 import { AuthRepository } from './auth.repo.js'
 import { SharedUserRepo } from "~/shared/reposistory/shared-user-repo.js"
 import ms, { StringValue } from 'ms'
@@ -40,7 +40,8 @@ export class AuthService {
             const user = await this.authRepository.createUser({
                 ...userData,
                 password: hashPassword,
-                roleId: clientRoleId as number
+                roleId: clientRoleId as number,
+                avatar: null
             })
             return user
         } catch (error) {
@@ -83,31 +84,7 @@ export class AuthService {
             if (!isPasswordValid) {
                 throw new BadRequestException("Invalid Password")
             }
-            let device = await this.authRepository.findDevice({
-                userId: user.id,
-                ip: clientInfo.ip,
-                userAgent: clientInfo.userAgent
-            })
-            if (!device) {
-                device = await this.authRepository.createDevice({
-                    userId: user.id,
-                    ip: clientInfo.ip,
-                    userAgent: clientInfo.userAgent,
-                })
-            }
-            else {
-                device = await this.authRepository.updateDevice(device.id, {
-                    userId: user.id,
-                    ip: clientInfo.ip,
-                    userAgent: clientInfo.userAgent
-                })
-            }
-            return this.generateTokens({
-                userId: user.id,
-                roleId: user.roleId,
-                deviceId: device.id,
-                roleName: user.role.name
-            })
+            return this.handleDeviceSession(user, clientInfo)
         } catch (error) {
             throw error
         }
@@ -155,6 +132,12 @@ export class AuthService {
                 throw new UnauthorizedException("RefreshToken has been used")
             }
 
+            // Kiểm tra xem token trong database đã quá hạn chưa
+            if (refreshTokenIndb.expiresAt < new Date()) {
+                await this.authRepository.deleteRefreshToken(body.refreshToken)
+                throw new UnauthorizedException("Refresh token has expired")
+            }
+
             // 4. Lấy thông tin cần thiết từ record trong DB
             const { deviceId, user: { roleId, name: roleName } } = refreshTokenIndb
 
@@ -182,9 +165,66 @@ export class AuthService {
             // 9. Trả về cặp token mới { accessToken, refreshToken } cho client
             return tokens
 
-        } catch (error) {
+        } catch (error: any) {
+            if (error instanceof HttpException) {
+                throw error
+            }
+            if (error?.name === 'TokenExpiredError') {
+                throw new UnauthorizedException("Refresh token has expired")
+            }
+            if (error?.name === 'JsonWebTokenError') {
+                throw new UnauthorizedException("Invalid refresh token")
+            }
             throw error
         }
     }
+    async logout(body: LogoutBodyType) {
+        try {
+            await this.authRepository.deleteRefreshToken(body.refreshToken)
+            return { message: "Logout successfully" }
+        } catch (error: any) {
+            // Mã P2025: Bản ghi không tồn tại trong DB (đã bị xóa trước đó) -> Vẫn coi là logout thành công
+            if (error.code === 'P2025') {
+                return { message: "Logout successfully" }
+            }
+            if (error instanceof HttpException) {
+                throw error
+            }
+            throw error
+        }
+    }
+
+    async handleDeviceSession(user: { id: number; roleId: number; role: { name: string } }, clientInfo: { ip: string; userAgent: string }) {
+        let device = await this.authRepository.findDevice({
+            userId: user.id,
+            ip: clientInfo.ip,
+            userAgent: clientInfo.userAgent
+        })
+
+        if (!device) {
+            device = await this.authRepository.createDevice({
+                userId: user.id,
+                ip: clientInfo.ip,
+                userAgent: clientInfo.userAgent,
+            })
+        } else {
+            device = await this.authRepository.updateDevice(device.id, {
+                userId: user.id,
+                ip: clientInfo.ip,
+                userAgent: clientInfo.userAgent
+            })
+        }
+
+        // Xóa tất cả RefreshToken cũ của thiết bị
+        await this.authRepository.deleteRefreshTokensByDeviceId(device.id)
+
+        return this.generateTokens({
+            userId: user.id,
+            roleId: user.roleId,
+            deviceId: device.id,
+            roleName: user.role.name
+        })
+    }
+
 
 }

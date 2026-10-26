@@ -8,7 +8,7 @@ export class AuthRepository {
     constructor(
         private readonly prismaService: PrismaService
     ) { }
-    async createUser(user: Omit<RegisterBodyType, 'confirmPassword' | 'code'> & Pick<UserType, 'roleId'>) {
+    async createUser(user: Pick<UserType, 'roleId' | 'email' | 'name' | 'phoneNumber' | 'avatar' | 'password'>) {
         return this.prismaService.user.create({
             data: user,
             omit: {
@@ -88,6 +88,13 @@ export class AuthRepository {
         return this.prismaService.refreshToken.delete({
             where: {
                 token
+            }
+        })
+    }
+    async deleteRefreshTokensByDeviceId(deviceId: number) {
+        return this.prismaService.refreshToken.deleteMany({
+            where: {
+                deviceId
             }
         })
     }

@@ -85,6 +85,13 @@ export const RoleSchema = z.object({
     updatedAt: z.date()
 })
 export const LogoutBodySchema = RefreshTokenBodySchema
+export const GoogleBodySchema = DeviceModel.pick({
+    userAgent: true,
+    ip: true
+})
+export const GetAuthorizationUrlResSchema = z.object({
+    url: z.string()
+}).strict()
 
 
 export type RegisterBodyType = z.infer<typeof RegisterBodySchema>
@@ -99,3 +106,5 @@ export type RefreshTokenResType = z.infer<typeof RefreshTokenResSchema>
 export type DeviceType = z.infer<typeof DeviceModel>
 export type RoleType = z.infer<typeof RoleSchema>
 export type LogoutBodyType = z.infer<typeof LogoutBodySchema>
+export type GoogleBodyType = z.infer<typeof GoogleBodySchema>
+export type GetAuthorizationUrlResType = z.infer<typeof GetAuthorizationUrlResSchema>

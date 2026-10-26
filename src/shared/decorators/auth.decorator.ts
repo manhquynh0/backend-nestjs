@@ -7,3 +7,4 @@ export const Auth = (authTypes: AuthType[], options: { condition?: ConditionGuar
     return SetMetadata(AUTH_TYPE_KEY, { authTypes, options })
 
 }
+export const IsPublic = () => Auth([AuthType.None], { condition: ConditionGuard.And })

@@ -1,7 +1,7 @@
 import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
 import { AUTH_TYPE_KEY } from '../decorators/auth.decorator.js'
-import { AccessTokenGuard } from './access-tokem.guard.js'
+import { AccessTokenGuard } from './access-token.guard.js'
 import { APIKeyGuard } from './api-key.guard.js'
 import { AuthType } from '../constanst/auth.constant.js'
 import { ConditionGuard } from '../constanst/auth.constant.js'
@@ -25,7 +25,7 @@ export class AuthenticationGuard implements CanActivate {
         const authTypeValue = this.reflector.getAllAndOverride(AUTH_TYPE_KEY, [
             context.getHandler(), //  Đại diện cho hàm API đang được gọi (ví dụ hàm getPosts()).
             context.getClass(), // Đại diện cho Class Controller chứa hàm API đó.
-        ]) ?? { authTypes: [AuthType.None], options: { condition: ConditionGuard.Or } }
+        ]) ?? { authTypes: [AuthType.Bearer], options: { condition: ConditionGuard.Or } }
 
         const guards = authTypeValue.authTypes.map((authType: AuthType) => this.authTypeGuardMap[authType])
 

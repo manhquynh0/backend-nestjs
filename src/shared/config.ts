@@ -21,7 +21,11 @@ const configSchema = z.object({
   ADMIN_EMAIL: z.string(),
   ADMIN_PHONE_NUMBER: z.string(),
   OTP_EXPIRES_IN: z.string(),
-  BREVO_API_KEY: z.string()
+  BREVO_API_KEY: z.string(),
+  GOOGLE_CLIENT_ID: z.string(),
+  GOOGLE_CLIENT_SECRET: z.string(),
+  GOOGLE_URI: z.string(),
+  GOOGLE_CALLBACK: z.string(),
 })
 
 const configServer = configSchema.safeParse(process.env)
