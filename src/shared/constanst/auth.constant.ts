@@ -17,6 +17,8 @@ export const UserActive = {
 } as const
 export const TypeOfVerificationCode = {
     REGISTER: 'REGISTER',
-    FORGOT_PASSWORD: 'FORGOT_PASSWORD'
+    FORGOT_PASSWORD: 'FORGOT_PASSWORD',
+    LOGIN: 'LOGIN',
+    DISABLE_2FA: 'DISABLE_2FA'
 } as const
 export type TypeOfVerificationCode = typeof TypeOfVerificationCode[keyof typeof TypeOfVerificationCode]

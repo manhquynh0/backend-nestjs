@@ -14,6 +14,8 @@ import { TypeOfVerificationCode } from "~/shared/constanst/auth.constant.js"
 import { BrevoEmailService } from "~/shared/services/BrevoEmail.service.js"
 import { AccessTokenPayLoadCreate } from '~/shared/types/token.type.js'
 import crypto from 'crypto'
+import { DisableTwoFactorDTO } from './auth.dto.js'
+import { TwoFactorAuthService } from '~/shared/services/2fa.service.js'
 @Injectable()
 export class AuthService {
     constructor(private readonly prismaService: PrismaService,
@@ -23,14 +25,17 @@ export class AuthService {
         private readonly authRepository: AuthRepository,
         private readonly sharedUserRepo: SharedUserRepo,
         private readonly brevoEmailService: BrevoEmailService,
+        private readonly twoFactorAuthService: TwoFactorAuthService
     ) { }
 
     async register(body: RegisterBodyType) {
 
         const vertificationCode = await this.authRepository.findUniqueVerificationCode({
-            email: body.email,
-            code: body.code,
-            type: TypeOfVerificationCode.REGISTER
+            email_code_type: {
+                email: body.email,
+                code: body.code,
+                type: TypeOfVerificationCode.REGISTER
+            }
         })
         if (!vertificationCode || vertificationCode.expiresAt < new Date()) {
             throw new BadRequestException("Invalid verification code")
@@ -225,11 +230,15 @@ export class AuthService {
 
     async forgotPassword(body: ForgotPasswordBodyType) {
         const { email, code, password } = body
-        const vertificationCode = await this.authRepository.findUniqueVerificationCode({
-            email,
-            code,
-            type: TypeOfVerificationCode.FORGOT_PASSWORD
-        })
+        const vertificationCode = await this.authRepository.findUniqueVerificationCode(
+            {
+                email_code_type: {
+                    email,
+                    code,
+                    type: TypeOfVerificationCode.FORGOT_PASSWORD
+                }
+            }
+        )
         const user = await this.sharedUserRepo.findUniqueUser({ email })
         if (!user) {
             throw new BadRequestException("User not found")
@@ -241,7 +250,7 @@ export class AuthService {
 
         const newPasswordHash = await this.hashsingService.hash(password)
 
-        // ✅ Dùng Interactive Transaction với client `tx`
+        //  Dùng Interactive Transaction với client `tx`
         await this.prismaService.$transaction(async (tx) => {
             // 1. Cập nhật mật khẩu mới
             await tx.user.update({
@@ -260,6 +269,17 @@ export class AuthService {
         return { message: "Password changed successfully" }
 
     }
-
+    async setup2fa(userId: number) {
+        const user = await this.sharedUserRepo.findUniqueUser({ id: userId })
+        if (!user) {
+            throw new BadRequestException("User not found")
+        }
+        if (user.totpSecret) {
+            throw new BadRequestException("2FA is already enabled")
+        }
+        const { secret, uri } = await this.twoFactorAuthService.generateOTPSecret(user.email)
+        await this.sharedUserRepo.updateUser(userId, { totpSecret: secret })
+        return { secret, uri }
+    }
 
 }

@@ -20,7 +20,11 @@ export class AuthRepository {
     async createVerificationCode(payload: Pick<VerificationCodeType, 'email' | 'type' | 'code' | 'expiresAt'>) {
         return this.prismaService.verificationCode.upsert({
             where: {
-                email: payload.email
+                email_code_type: {
+                    email: payload.email,
+                    type: payload.type,
+                    code: payload.code
+                }
             },
             update: {
                 code: payload.code,
@@ -30,11 +34,13 @@ export class AuthRepository {
             create: payload
         })
     }
-    async findUniqueVerificationCode(uniValue: { email: string } | { id: number } | {
-        email: string,
-        code: string,
-        type: TypeOfVerificationCode
-    }) {
+    async findUniqueVerificationCode(uniValue: { id: number } | {
+        email_code_type: {
+            email: string,
+            code: string,
+            type: TypeOfVerificationCode
+        }
+    }): Promise<VerificationCodeType | null> {
         return this.prismaService.verificationCode.findUnique({
             where: uniValue
         })

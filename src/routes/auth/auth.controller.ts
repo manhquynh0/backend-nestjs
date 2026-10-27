@@ -1,12 +1,14 @@
 import { Body, Controller, HttpCode, HttpStatus, Ip, Post, Get, Query, Res, HttpException, BadRequestException } from "@nestjs/common"
 import type { Response } from "express"
 import { AuthService } from "./auth.service.js"
-import { RegisterDTO, RegisterResDTO, SendOtpDTO, LoginDTO, LoginResDTO, RefreshTokenResDTO, RefreshTokenBodyDTO, MessageResDTO, LogoutDTO, GetAuthorizationUrlResDTO, ForgotPasswordDTO } from "./auth.dto.js"
+import { RegisterDTO, RegisterResDTO, SendOtpDTO, LoginDTO, LoginResDTO, RefreshTokenResDTO, RefreshTokenBodyDTO, MessageResDTO, LogoutDTO, GetAuthorizationUrlResDTO, ForgotPasswordDTO, DisableTwoFactorDTO, TwoFactorResDTO } from "./auth.dto.js"
 import { ZodSerializerDto } from "nestjs-zod"
 import { UserAgent } from "~/shared/decorators/user-agent.decorator.js";
 import { GoogleService } from "./google.service.js";
 import { IsPublic } from "~/shared/decorators/auth.decorator.js";
 import envConfig from "~/shared/config.js";
+import { EmptyBodyDTO } from "~/shared/dtos/request.dto.js"
+import { ActiveUser } from "~/shared/decorators/activeUser.decorator.js"
 
 
 @Controller('auth')
@@ -84,6 +86,14 @@ export class AuthController {
     @HttpCode(HttpStatus.OK)
     async forgotPassword(@Body() body: ForgotPasswordDTO) {
         return this.authService.forgotPassword(body)
+    }
+
+
+    @Post('2fa/setup')
+    @HttpCode(HttpStatus.OK)
+    @ZodSerializerDto(TwoFactorResDTO)
+    async setup2fa(@Body() _: EmptyBodyDTO, @ActiveUser('userId') userId: number) {
+        return this.authService.setup2fa(userId)
     }
 
 
