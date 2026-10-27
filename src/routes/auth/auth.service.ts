@@ -25,31 +25,25 @@ export class AuthService {
     ) { }
 
     async register(body: RegisterBodyType) {
-        try {
-            const vertificationCode = await this.authRepository.findUniqueVerificationCode({
-                email: body.email,
-                code: body.code,
-                type: TypeOfVerificationCode.REGISTER
-            })
-            if (!vertificationCode || vertificationCode.expiresAt < new Date()) {
-                throw new BadRequestException("Invalid verification code")
-            }
-            const clientRoleId = await this.rolesService.getClientRoleId()
-            const hashPassword = await this.hashsingService.hash(body.password)
-            const { confirmPassword, code, ...userData } = body
-            const user = await this.authRepository.createUser({
-                ...userData,
-                password: hashPassword,
-                roleId: clientRoleId as number,
-                avatar: null
-            })
-            return user
-        } catch (error) {
-            if (isUniqueConstraintError(error)) {
-                throw new ConflictException("User already exists")
-            }
-            throw error
+
+        const vertificationCode = await this.authRepository.findUniqueVerificationCode({
+            email: body.email,
+            code: body.code,
+            type: TypeOfVerificationCode.REGISTER
+        })
+        if (!vertificationCode || vertificationCode.expiresAt < new Date()) {
+            throw new BadRequestException("Invalid verification code")
         }
+        const clientRoleId = await this.rolesService.getClientRoleId()
+        const hashPassword = await this.hashsingService.hash(body.password)
+        const { confirmPassword, code, ...userData } = body
+        const user = await this.authRepository.createUser({
+            ...userData,
+            password: hashPassword,
+            roleId: clientRoleId as number,
+            avatar: null
+        })
+        return user
 
     }
     async sendOtp(body: SendOtpBodyType) {
