@@ -3,8 +3,8 @@ import { PrismaService } from '~/shared/services/prisma.service.js'
 import { RolesService } from './roles.service.js'
 import { TokenService } from '~/shared/services/token.service.js'
 import { HashsingService } from '~/shared/services/hashsing.service.js'
-import { isUniqueConstraintError, generateOTP } from '~/shared/helpers.js'
-import { RegisterBodyType, SendOtpBodyType, LoginBodyType, RefreshTokenBodyType, LogoutBodyType } from './auth.model.js'
+import { generateOTP } from '~/shared/helpers.js'
+import { RegisterBodyType, SendOtpBodyType, LoginBodyType, RefreshTokenBodyType, LogoutBodyType, ForgotPasswordBodyType } from './auth.model.js'
 import { AuthRepository } from './auth.repo.js'
 import { SharedUserRepo } from "~/shared/reposistory/shared-user-repo.js"
 import ms, { StringValue } from 'ms'
@@ -13,6 +13,7 @@ import { addMilliseconds } from 'date-fns'
 import { TypeOfVerificationCode } from "~/shared/constanst/auth.constant.js"
 import { BrevoEmailService } from "~/shared/services/BrevoEmail.service.js"
 import { AccessTokenPayLoadCreate } from '~/shared/types/token.type.js'
+import crypto from 'crypto'
 @Injectable()
 export class AuthService {
     constructor(private readonly prismaService: PrismaService,
@@ -49,9 +50,10 @@ export class AuthService {
     async sendOtp(body: SendOtpBodyType) {
         const { email, type } = body
         const user = await this.sharedUserRepo.findUniqueUser({ email })
-        if (user) {
+        if (user && type === TypeOfVerificationCode.REGISTER) {
             throw new ConflictException("User already exists")
         }
+
         const code = generateOTP()
         const verificationCode = await this.authRepository.createVerificationCode({
             email,
@@ -218,6 +220,45 @@ export class AuthService {
             deviceId: device.id,
             roleName: user.role.name
         })
+    }
+
+
+    async forgotPassword(body: ForgotPasswordBodyType) {
+        const { email, code, password } = body
+        const vertificationCode = await this.authRepository.findUniqueVerificationCode({
+            email,
+            code,
+            type: TypeOfVerificationCode.FORGOT_PASSWORD
+        })
+        const user = await this.sharedUserRepo.findUniqueUser({ email })
+        if (!user) {
+            throw new BadRequestException("User not found")
+        }
+        if (!vertificationCode || vertificationCode.expiresAt < new Date()) {
+            throw new BadRequestException("Invalid verification code")
+        }
+
+
+        const newPasswordHash = await this.hashsingService.hash(password)
+
+        // ✅ Dùng Interactive Transaction với client `tx`
+        await this.prismaService.$transaction(async (tx) => {
+            // 1. Cập nhật mật khẩu mới
+            await tx.user.update({
+                where: { id: user.id },
+                data: { password: newPasswordHash },
+            })
+            // 2. Xóa mã OTP đã dùng
+            await tx.verificationCode.delete({
+                where: { id: vertificationCode.id },
+            })
+            // 3. Đăng xuất khỏi tất cả các thiết bị khác
+            await tx.refreshToken.deleteMany({
+                where: { userId: user.id },
+            })
+        })
+        return { message: "Password changed successfully" }
+
     }
 
 

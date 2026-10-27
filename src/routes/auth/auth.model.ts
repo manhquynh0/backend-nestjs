@@ -93,6 +93,20 @@ export const GetAuthorizationUrlResSchema = z.object({
     url: z.string()
 }).strict()
 
+export const ForgotPasswordBodySchema = z.object({
+    email: z.string().email(),
+    code: z.string().length(6),
+    password: z.string().min(8).max(100),
+    confirmPassword: z.string().min(8).max(100),
+}).strict().superRefine(({ password, confirmPassword }, ctx) => {
+    if (password !== confirmPassword) {
+        ctx.addIssue({
+            code: "custom",
+            message: "Passwords do not match",
+            path: ["confirmPassword"],
+        })
+    }
+})
 
 export type RegisterBodyType = z.infer<typeof RegisterBodySchema>
 export type RegisterResType = z.infer<typeof RegisterResSchema>
@@ -108,3 +122,4 @@ export type RoleType = z.infer<typeof RoleSchema>
 export type LogoutBodyType = z.infer<typeof LogoutBodySchema>
 export type GoogleBodyType = z.infer<typeof GoogleBodySchema>
 export type GetAuthorizationUrlResType = z.infer<typeof GetAuthorizationUrlResSchema>
+export type ForgotPasswordBodyType = z.infer<typeof ForgotPasswordBodySchema>

@@ -1,7 +1,7 @@
 import { Body, Controller, HttpCode, HttpStatus, Ip, Post, Get, Query, Res, HttpException, BadRequestException } from "@nestjs/common"
 import type { Response } from "express"
 import { AuthService } from "./auth.service.js"
-import { RegisterDTO, RegisterResDTO, SendOtpDTO, LoginDTO, LoginResDTO, RefreshTokenResDTO, RefreshTokenBodyDTO, MessageResDTO, LogoutDTO, GetAuthorizationUrlResDTO } from "./auth.dto.js"
+import { RegisterDTO, RegisterResDTO, SendOtpDTO, LoginDTO, LoginResDTO, RefreshTokenResDTO, RefreshTokenBodyDTO, MessageResDTO, LogoutDTO, GetAuthorizationUrlResDTO, ForgotPasswordDTO } from "./auth.dto.js"
 import { ZodSerializerDto } from "nestjs-zod"
 import { UserAgent } from "~/shared/decorators/user-agent.decorator.js";
 import { GoogleService } from "./google.service.js";
@@ -66,21 +66,24 @@ export class AuthController {
             if (!code) {
                 throw new BadRequestException('Authorization code is missing')
             }
-
             const data = await this.googleService.googleCallback({ code, state }) as any
-
-            // ✅ Redirect đúng vào route /oauth-google-callback của React
             return res.redirect(
                 `${envConfig.GOOGLE_URI}/oauth-google-callback?accessToken=${data.accessToken}&refreshToken=${data.refreshToken}`
             )
         } catch (error) {
             const message = error instanceof HttpException ? error.message : "Failed to login with Google"
-
-            // ✅ Báo lỗi cũng đẩy về /oauth-google-callback để component Oauth hiển thị thông báo
             return res.redirect(
                 `${envConfig.GOOGLE_URI}/oauth-google-callback?errorMessage=${encodeURIComponent(message)}`
             )
         }
+    }
+
+    @Post('forgot-password')
+    @IsPublic()
+    @ZodSerializerDto(MessageResDTO)
+    @HttpCode(HttpStatus.OK)
+    async forgotPassword(@Body() body: ForgotPasswordDTO) {
+        return this.authService.forgotPassword(body)
     }
 
 

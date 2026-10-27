@@ -13,5 +13,14 @@ export class SharedUserRepo {
             where: uniqueObject
         })
     }
+    async updateUser(id: number, payload: Partial<UserType>) {
+        return this.prismaService.user.update({
+            where: { id },
+            data: payload,
+            omit: {
+                password: true,
+                totpSecret: true
+            }
+        })
+    }
 }
-

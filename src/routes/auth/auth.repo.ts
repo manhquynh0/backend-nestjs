@@ -24,7 +24,8 @@ export class AuthRepository {
             },
             update: {
                 code: payload.code,
-                expiresAt: payload.expiresAt
+                expiresAt: payload.expiresAt,
+                type: payload.type
             },
             create: payload
         })
@@ -96,6 +97,16 @@ export class AuthRepository {
             where: {
                 deviceId
             }
+        })
+    }
+    async deleteVerificationCode(id: number) {
+        return this.prismaService.verificationCode.delete({
+            where: { id }
+        })
+    }
+    async deleteRefreshTokensByUserId(userId: number) {
+        return this.prismaService.refreshToken.deleteMany({
+            where: { userId }
         })
     }
 }
