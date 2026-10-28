@@ -79,11 +79,42 @@ export class AuthService {
             const { email, password } = body
             const user = await this.authRepository.findUniqueUserWithRole({ email })
             if (!user) {
-                throw new BadRequestException("Invalid Email")
+                throw new UnauthorizedException("Invalid Email")
             }
             const isPasswordValid = await this.hashsingService.compare(password, user.password)
             if (!isPasswordValid) {
-                throw new BadRequestException("Invalid Password")
+                throw new UnauthorizedException("Invalid Password")
+            }
+            if (user.totpSecret) {
+                if (!body.totpCode && !body.code) {
+                    throw new UnauthorizedException({
+                        errorCode: "REQUIRE_2FA",
+                        message: "2FA code is required"
+                    })
+                }
+                if (body.totpCode) {
+                    const isValid = await this.twoFactorAuthService.verifyOTP(user.email, user.totpSecret, body.totpCode)
+                    if (!isValid) {
+                        throw new BadRequestException("Invalid 2FA code")
+                    }
+                }
+                else if (body.code) {
+                    const isValid = await this.authRepository.findUniqueVerificationCode({
+                        email_code_type: {
+                            email: user.email,
+                            code: body.code,
+                            type: TypeOfVerificationCode.LOGIN
+                        }
+                    })
+
+
+                    if (!isValid) {
+                        throw new BadRequestException("Invalid OTP code")
+                    }
+                    if (isValid?.expiresAt < new Date()) {
+                        throw new BadRequestException("OTP code has expired")
+                    }
+                }
             }
             return this.handleDeviceSession(user, clientInfo)
         } catch (error) {
@@ -280,6 +311,38 @@ export class AuthService {
         const { secret, uri } = await this.twoFactorAuthService.generateOTPSecret(user.email)
         await this.sharedUserRepo.updateUser(userId, { totpSecret: secret })
         return { secret, uri }
+    }
+    async disable2fa(data: DisableTwoFactorDTO, userId: number) {
+        const user = await this.sharedUserRepo.findUniqueUser({ id: userId })
+        if (!user) {
+            throw new BadRequestException("User not found")
+        }
+        if (!user.totpSecret) {
+            throw new BadRequestException("2FA is not enabled")
+        }
+        if (data.totpCode) {
+            const isValid = await this.twoFactorAuthService.verifyOTP(user.email, user.totpSecret, data.totpCode)
+            if (!isValid) {
+                throw new BadRequestException("Invalid 2FA code")
+            }
+        }
+        if (data.code) {
+            const isValid = await this.authRepository.findUniqueVerificationCode(
+                {
+                    email_code_type: {
+                        email: user.email,
+                        code: data.code,
+                        type: TypeOfVerificationCode.DISABLE_2FA
+                    }
+                }
+            )
+            if (!isValid) {
+                throw new BadRequestException("Invalid verification code")
+            }
+        }
+
+        await this.sharedUserRepo.updateUser(userId, { totpSecret: null })
+        return { message: "2FA disabled successfully" }
     }
 
 }

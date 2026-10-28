@@ -9,6 +9,7 @@ import { APP_PIPE } from '@nestjs/core'
 import { ZodSerializerInterceptor, ZodValidationPipe } from 'nestjs-zod'
 import { CustomZodValidationPipe } from './shared/pipes/custom-zod-validtion.pipe.js'
 import { CatchEverythingFilter } from './shared/filters/catch-everything.filter.js'
+import { LanguageModule } from './routes/language/language.module.js';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -16,6 +17,7 @@ import { CatchEverythingFilter } from './shared/filters/catch-everything.filter.
     }),
     SharedModule,
     AuthModule,
+    LanguageModule,
   ],
   controllers: [AppController],
   providers: [

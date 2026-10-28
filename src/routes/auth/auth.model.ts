@@ -43,14 +43,14 @@ export const SendOtpBodySchema = VerificationCode.pick({
 export const LoginBodySchema = UserSchema.pick({
     email: true,
     password: true
+}).extend({
+    totpCode: z.string().length(6).optional(), // 2FA code
+    code: z.string().length(6).optional() // email code
 }).strict()
 
 export const LoginResSchema = z.object({
     accessToken: z.string(),
     refreshToken: z.string()
-}).extend({
-    totpCode: z.string().length(6).optional(), // 2FA code
-    code: z.string().length(6).optional() // email code
 }).strict()
 
 export const RefreshTokenBodySchema = z.object({
