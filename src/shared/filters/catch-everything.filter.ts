@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common'
 import { HttpAdapterHost } from '@nestjs/core'
 import { isUniqueConstraintError, isNotFoundError } from '../helpers.js'
-import { ErrorCode } from '../constanst/error.constant.js'
+import { ErrorCode } from '../constants/error.constant.js'
 import { AppException } from '../exceptions/app.exception.js'
 
 @Catch()

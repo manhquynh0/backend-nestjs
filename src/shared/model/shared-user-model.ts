@@ -1,5 +1,5 @@
 import z from "zod"
-import { UserActive } from "../constanst/auth.constant.js"
+import { UserActive } from "../constants/auth.constant.js"
 
 
 export const UserSchema = z.object({

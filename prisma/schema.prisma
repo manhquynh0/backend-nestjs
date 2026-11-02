@@ -157,7 +157,7 @@ model RefreshToken {
 model Permission {
   id          Int        @id @default(autoincrement())
   name        String
-  description String
+  description String     @default("")
   path        String
   method      HTTPMethod
 
@@ -172,6 +172,7 @@ model Permission {
 
   roles PermissionsRoles[]
 
+  @@unique([path, method], map: "Permission_path_method_deletedAt_key")
   @@index([deletedAt])
 }
 

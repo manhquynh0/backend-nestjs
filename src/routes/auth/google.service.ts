@@ -8,7 +8,7 @@ import { RolesService } from './roles.service.js'
 import { AuthService } from './auth.service.js'
 import { HashsingService } from '~/shared/services/hashsing.service.js'
 import { randomUUID } from 'crypto'
-import { roleName } from '~/shared/constanst/role.constants.js'
+import { roleName } from '~/shared/constants/role.constant.js'
 @Injectable()
 export class GoogleService {
     private readonly oauth2Client = new OAuth2Client(

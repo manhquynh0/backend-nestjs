@@ -10,7 +10,7 @@ import { SharedUserRepo } from "~/shared/reposistory/shared-user-repo.js"
 import ms, { StringValue } from 'ms'
 import envConfig from '~/shared/config.js'
 import { addMilliseconds } from 'date-fns'
-import { TypeOfVerificationCode } from "~/shared/constanst/auth.constant.js"
+import { TypeOfVerificationCode } from "~/shared/constants/auth.constant.js"
 import { BrevoEmailService } from "~/shared/services/BrevoEmail.service.js"
 import { AccessTokenPayLoadCreate } from '~/shared/types/token.type.js'
 import crypto from 'crypto'
@@ -106,8 +106,6 @@ export class AuthService {
                             type: TypeOfVerificationCode.LOGIN
                         }
                     })
-
-
                     if (!isValid) {
                         throw new BadRequestException("Invalid OTP code")
                     }

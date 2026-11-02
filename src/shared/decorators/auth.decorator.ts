@@ -1,5 +1,5 @@
 import { SetMetadata } from "@nestjs/common";
-import { AuthType, ConditionGuard } from "../constanst/auth.constant.js";
+import { AuthType, ConditionGuard } from "../constants/auth.constant.js";
 
 
 export const AUTH_TYPE_KEY = 'autotype'

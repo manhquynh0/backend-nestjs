@@ -1,6 +1,6 @@
 
 import { z } from "zod"
-import { TypeOfVerificationCode } from "~/shared/constanst/auth.constant.js"
+import { TypeOfVerificationCode } from "~/shared/constants/auth.constant.js"
 import { UserSchema } from "~/shared/model/shared-user-model.js"
 
 

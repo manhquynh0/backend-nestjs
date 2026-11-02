@@ -3,8 +3,8 @@ import { Reflector } from '@nestjs/core'
 import { AUTH_TYPE_KEY } from '../decorators/auth.decorator.js'
 import { AccessTokenGuard } from './access-token.guard.js'
 import { APIKeyGuard } from './api-key.guard.js'
-import { AuthType } from '../constanst/auth.constant.js'
-import { ConditionGuard } from '../constanst/auth.constant.js'
+import { AuthType } from '../constants/auth.constant.js'
+import { ConditionGuard } from '../constants/auth.constant.js'
 @Injectable()
 export class AuthenticationGuard implements CanActivate {
     private readonly authTypeGuardMap: Record<string, CanActivate>

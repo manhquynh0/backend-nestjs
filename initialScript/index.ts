@@ -1,7 +1,7 @@
 import 'dotenv/config'
 import { PrismaPg } from '@prisma/adapter-pg'
 import { PrismaClient } from '../src/generated/prisma/client.js'
-import { roleName } from '~/shared/constanst/role.constants.js'
+import { roleName } from '~/shared/constants/role.constant.js'
 import { HashsingService } from '~/shared/services/hashsing.service.js'
 const adapter = new PrismaPg({
     connectionString: process.env.DATABASE_URL

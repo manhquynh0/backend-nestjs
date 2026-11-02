@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "~/shared/services/prisma.service.js";
-import { roleName } from '~/shared/constanst/role.constants.js'
+import { roleName } from '~/shared/constants/role.constant.js'
 @Injectable()
 export class RolesService {
     constructor(private readonly prismaService: PrismaService) { }

@@ -1,6 +1,6 @@
 // src/shared/exceptions/app.exception.ts
 import { HttpException, HttpStatus } from '@nestjs/common'
-import { ErrorCodeType } from '~/shared/constanst/error.constant.js'
+import { ErrorCodeType } from '~/shared/constants/error.constant.js'
 
 export class AppException extends HttpException {
     public readonly errorCode: ErrorCodeType

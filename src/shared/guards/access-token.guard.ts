@@ -1,6 +1,6 @@
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common'
 import { TokenService } from '~/shared/services/token.service.js'
-import { REQUEST_USER_KEY } from '../constanst/auth.constant.js'
+import { REQUEST_USER_KEY } from '../constants/auth.constant.js'
 @Injectable()
 export class AccessTokenGuard implements CanActivate {
     constructor(private readonly tokenService: TokenService) { }
