@@ -11,6 +11,7 @@ import { CustomZodValidationPipe } from './shared/pipes/custom-zod-validtion.pip
 import { CatchEverythingFilter } from './shared/filters/catch-everything.filter.js'
 import { LanguageModule } from './routes/language/language.module.js'
 import { PermissionModule } from './routes/permission/permission.module.js'
+import { RolesModule } from './routes/roles/role.module.js';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -20,6 +21,7 @@ import { PermissionModule } from './routes/permission/permission.module.js'
     AuthModule,
     LanguageModule,
     PermissionModule,
+    RolesModule,
   ],
   controllers: [AppController],
   providers: [
@@ -38,4 +40,4 @@ import { PermissionModule } from './routes/permission/permission.module.js'
     },
   ],
 })
-export class AppModule {}
+export class AppModule { }
