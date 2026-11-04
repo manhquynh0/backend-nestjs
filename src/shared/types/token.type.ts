@@ -1,4 +1,3 @@
-
 export interface AccessTokenPayLoadCreate {
   userId: number
   roleId: number

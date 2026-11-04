@@ -9,8 +9,8 @@ import { APP_PIPE } from '@nestjs/core'
 import { ZodSerializerInterceptor, ZodValidationPipe } from 'nestjs-zod'
 import { CustomZodValidationPipe } from './shared/pipes/custom-zod-validtion.pipe.js'
 import { CatchEverythingFilter } from './shared/filters/catch-everything.filter.js'
-import { LanguageModule } from './routes/language/language.module.js';
-import { PermissionModule } from './routes/permission/permission.module.js';
+import { LanguageModule } from './routes/language/language.module.js'
+import { PermissionModule } from './routes/permission/permission.module.js'
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -30,12 +30,12 @@ import { PermissionModule } from './routes/permission/permission.module.js';
     },
     {
       provide: APP_INTERCEPTOR,
-      useClass: ZodSerializerInterceptor
+      useClass: ZodSerializerInterceptor,
     },
     {
       provide: APP_FILTER,
-      useClass: CatchEverythingFilter
-    }
+      useClass: CatchEverythingFilter,
+    },
   ],
 })
-export class AppModule { }
+export class AppModule {}

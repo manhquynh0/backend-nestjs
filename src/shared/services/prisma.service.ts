@@ -5,13 +5,14 @@ import { PrismaClient } from '~/generated/prisma/client.js'
 
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
-  constructor(configService: ConfigService) {
+  constructor(configService?: ConfigService) {
+    const connectionString = configService?.get<string>('DATABASE_URL') ?? process.env.DATABASE_URL!
     const adapter = new PrismaPg({
-      connectionString: configService.getOrThrow<string>('DATABASE_URL'),
+      connectionString,
     })
     super({
       adapter,
-      log: ['info', 'query']
+      log: ['info', 'query'],
     })
   }
 

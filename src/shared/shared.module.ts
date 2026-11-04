@@ -10,14 +10,26 @@ import { AuthenticationGuard } from './guards/authentication.guard.js'
 import { SharedUserRepo } from './reposistory/shared-user-repo.js'
 import { BrevoEmailService } from './services/BrevoEmail.service.js'
 import { TwoFactorAuthService } from './services/2fa.service.js'
-const shareService = [PrismaService, HashsingService, TokenService, SharedUserRepo, BrevoEmailService, TwoFactorAuthService]
+const shareService = [
+  PrismaService,
+  HashsingService,
+  TokenService,
+  SharedUserRepo,
+  BrevoEmailService,
+  TwoFactorAuthService,
+]
 @Global()
 @Module({
-  providers: [...shareService, AccessTokenGuard, APIKeyGuard, {
-    provide: APP_GUARD,
-    useClass: AuthenticationGuard
-  }],
+  providers: [
+    ...shareService,
+    AccessTokenGuard,
+    APIKeyGuard,
+    {
+      provide: APP_GUARD,
+      useClass: AuthenticationGuard,
+    },
+  ],
   exports: shareService,
   imports: [JwtModule],
 })
-export class SharedModule { }
+export class SharedModule {}

@@ -8,6 +8,7 @@
   "type": "module",
   "scripts": {
     "initSeedData": "tsx initialScript/index.ts",
+    "create-permissions": "tsx initialScript/create-permission.ts",
     "build": "nest build",
     "deploy": "nest deploy",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
@@ -21,7 +22,8 @@
     "test:cov": "vitest run --coverage",
     "test:debug": "vitest --inspect-brk --no-file-parallelism",
     "test:e2e": "vitest run --config ./vitest.config.e2e.ts",
-    "postinstall": "prisma skills sync || exit 0"
+    "postinstall": "prisma skills sync || exit 0",
+    "create-permission": "tsx initialScript/create-permission.ts"
   },
   "dependencies": {
     "@getbrevo/brevo": "^6.2.0",

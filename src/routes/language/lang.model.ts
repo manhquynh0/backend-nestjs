@@ -1,6 +1,7 @@
-import { z } from "zod"
+import { z } from 'zod'
 
-export const LanguageBodySchema = z.object({
+export const LanguageBodySchema = z
+  .object({
     id: z.string(),
     name: z.string(),
     code: z.string(),
@@ -8,24 +9,29 @@ export const LanguageBodySchema = z.object({
     updatedById: z.number().nullable(),
     deletedAt: z.date().nullable(),
     createdAt: z.date(),
-    updatedAt: z.date()
-}).strict()
+    updatedAt: z.date(),
+  })
+  .strict()
 export const LanguageCreateBodySchema = LanguageBodySchema.pick({
-    id: true,
-    name: true,
-    code: true,
+  id: true,
+  name: true,
+  code: true,
 }).strict()
 export const LanguageUpdateBodySchema = LanguageBodySchema.pick({
-    name: true,
-    code: true,
-}).partial().strict()
+  name: true,
+  code: true,
+})
+  .partial()
+  .strict()
 export const LanguageUpdateResBodySchema = LanguageBodySchema
 
 export const GetLanguageResSchema = z.array(LanguageBodySchema)
 
-export const GetLanguageParamsSchema = z.object({
-    languageId: z.string().max(10)
-}).strict()
+export const GetLanguageParamsSchema = z
+  .object({
+    languageId: z.string().max(10),
+  })
+  .strict()
 export const GetLanguageDetailResSchema = LanguageBodySchema
 
 export type GetLanguageResType = z.infer<typeof GetLanguageResSchema>
