@@ -10,6 +10,7 @@ import { AuthenticationGuard } from './guards/authentication.guard.js'
 import { SharedUserRepo } from './reposistory/shared-user-repo.js'
 import { BrevoEmailService } from './services/BrevoEmail.service.js'
 import { TwoFactorAuthService } from './services/2fa.service.js'
+import { PermissionGuard } from './guards/permission.guard.js'
 const shareService = [
   PrismaService,
   HashsingService,
@@ -28,8 +29,12 @@ const shareService = [
       provide: APP_GUARD,
       useClass: AuthenticationGuard,
     },
+    {
+      provide: APP_GUARD,
+      useClass: PermissionGuard,
+    },
   ],
   exports: shareService,
   imports: [JwtModule],
 })
-export class SharedModule {}
+export class SharedModule { }

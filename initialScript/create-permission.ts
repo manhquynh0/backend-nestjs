@@ -3,6 +3,7 @@ import { NestFactory } from '@nestjs/core'
 import { AppModule } from '../src/app.module.js'
 import { PrismaService } from '~/shared/services/prisma.service.js'
 import { HTTPMethod } from '../src/generated/prisma/enums.js'
+import { roleName } from '~/shared/constants/role.constant.js'
 const prisma = new PrismaService()
 const permissionInDb = await prisma.permission.findMany({
     where: {
@@ -84,6 +85,34 @@ async function bootstrap() {
         })
         console.log(result)
     }
+    // cap nhat cac permission cho admin
+    const adminRole = await prisma.role.findFirstOrThrow({
+        where: {
+            name: roleName.Admin
+        }
+    })
+    if (adminRole) {
+        const allPermissions = await prisma.permission.findMany({
+            where: {
+                deletedAt: null
+            }
+        })
+        const result = await prisma.role.update({
+            where: {
+                id: adminRole.id
+            },
+            data: {
+                permissions: {
+                    deleteMany: {},
+                    create: allPermissions.map((item) => ({
+                        permission_id: item.id
+                    }))
+                }
+            }
+        })
+        console.log(result)
+    }
+
     process.exit(0)
 }
 bootstrap()

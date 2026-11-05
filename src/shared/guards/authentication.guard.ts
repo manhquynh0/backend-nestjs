@@ -26,6 +26,10 @@ export class AuthenticationGuard implements CanActivate {
       context.getHandler(), //  Đại diện cho hàm API đang được gọi (ví dụ hàm getPosts()).
       context.getClass(), // Đại diện cho Class Controller chứa hàm API đó.
     ]) ?? { authTypes: [AuthType.Bearer], options: { condition: ConditionGuard.Or } }
+    const request = context.switchToHttp().getRequest()
+    const isPublic = authTypeValue.authTypes.includes(AuthType.None)
+    request['isPublic'] = isPublic
+    if (isPublic) return true
 
     const guards = authTypeValue.authTypes.map(
       (authType: AuthType) => this.authTypeGuardMap[authType],
