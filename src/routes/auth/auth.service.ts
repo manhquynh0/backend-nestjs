@@ -8,7 +8,7 @@ import {
 import { PrismaService } from '~/shared/services/prisma.service.js'
 import { RolesService } from './roles.service.js'
 import { TokenService } from '~/shared/services/token.service.js'
-import { HashsingService } from '~/shared/services/hashsing.service.js'
+import { HashingService } from '~/shared/services/hashing.service.js'
 import { generateOTP } from '~/shared/helpers.js'
 import {
   RegisterBodyType,
@@ -33,14 +33,14 @@ import { TwoFactorAuthService } from '~/shared/services/2fa.service.js'
 export class AuthService {
   constructor(
     private readonly prismaService: PrismaService,
-    private readonly hashsingService: HashsingService,
+    private readonly hashingService: HashingService,
     private readonly rolesService: RolesService,
     private readonly tokenService: TokenService,
     private readonly authRepository: AuthRepository,
     private readonly sharedUserRepo: SharedUserRepo,
     private readonly brevoEmailService: BrevoEmailService,
     private readonly twoFactorAuthService: TwoFactorAuthService,
-  ) {}
+  ) { }
 
   async register(body: RegisterBodyType) {
     const vertificationCode = await this.authRepository.findUniqueVerificationCode({
@@ -54,7 +54,7 @@ export class AuthService {
       throw new BadRequestException('Invalid verification code')
     }
     const clientRoleId = await this.rolesService.getClientRoleId()
-    const hashPassword = await this.hashsingService.hash(body.password)
+    const hashPassword = await this.hashingService.hash(body.password)
     const { confirmPassword, code, ...userData } = body
     const user = await this.authRepository.createUser({
       ...userData,
@@ -92,7 +92,7 @@ export class AuthService {
       if (!user) {
         throw new UnauthorizedException('Invalid Email')
       }
-      const isPasswordValid = await this.hashsingService.compare(password, user.password)
+      const isPasswordValid = await this.hashingService.compare(password, user.password)
       if (!isPasswordValid) {
         throw new UnauthorizedException('Invalid Password')
       }
@@ -292,7 +292,7 @@ export class AuthService {
       throw new BadRequestException('Invalid verification code')
     }
 
-    const newPasswordHash = await this.hashsingService.hash(password)
+    const newPasswordHash = await this.hashingService.hash(password)
 
     //  Dùng Interactive Transaction với client `tx`
     await this.prismaService.$transaction(async (tx) => {

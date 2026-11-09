@@ -5,7 +5,7 @@ import { GoogleBodyType } from './auth.model.js'
 import { AuthRepository } from './auth.repo.js'
 import { RolesService } from './roles.service.js'
 import { AuthService } from './auth.service.js'
-import { HashsingService } from '~/shared/services/hashsing.service.js'
+import { HashingService } from '~/shared/services/hashing.service.js'
 import { randomUUID } from 'crypto'
 import { roleName } from '~/shared/constants/role.constant.js'
 @Injectable()
@@ -17,10 +17,10 @@ export class GoogleService {
   )
   constructor(
     private readonly authRepository: AuthRepository,
-    private readonly hashsingService: HashsingService,
+    private readonly hashsingService: HashingService,
     private readonly rolesService: RolesService,
     private readonly authService: AuthService,
-  ) {}
+  ) { }
   getAuthorizationUrl({ userAgent, ip }: GoogleBodyType) {
     const scope = [
       'https://www.googleapis.com/auth/userinfo.email',

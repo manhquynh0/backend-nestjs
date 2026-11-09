@@ -16,3 +16,10 @@ export const RoleAlreadyExistsException = (name?: string) =>
     errorCode: ErrorCode.VALIDATION_ERROR,
     details: [{ field: 'name', message: 'Tên role đã tồn tại' }],
   })
+
+export const ForbiddenDeleteRoleException = () =>
+  new AppException({
+    message: 'Không thể xóa role này',
+    statusCode: HttpStatus.FORBIDDEN,
+    errorCode: ErrorCode.VALIDATION_ERROR,
+  })

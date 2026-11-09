@@ -1,6 +1,6 @@
 import { Module, Global } from '@nestjs/common'
 import { PrismaService } from '~/shared/services/prisma.service.js'
-import { HashsingService } from './services/hashsing.service.js'
+import { HashingService } from '~/shared/services/hashing.service.js'
 import { TokenService } from '~/shared/services/token.service.js'
 import { JwtModule } from '@nestjs/jwt'
 import { AccessTokenGuard } from './guards/access-token.guard.js'
@@ -13,7 +13,7 @@ import { TwoFactorAuthService } from './services/2fa.service.js'
 import { PermissionGuard } from './guards/permission.guard.js'
 const shareService = [
   PrismaService,
-  HashsingService,
+  HashingService,
   TokenService,
   SharedUserRepo,
   BrevoEmailService,

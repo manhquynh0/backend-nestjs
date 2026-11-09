@@ -12,6 +12,7 @@ import { CatchEverythingFilter } from './shared/filters/catch-everything.filter.
 import { LanguageModule } from './routes/language/language.module.js'
 import { PermissionModule } from './routes/permission/permission.module.js'
 import { RolesModule } from './routes/roles/role.module.js';
+import { ProfileModule } from './routes/profile/profile.module.js';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -22,6 +23,7 @@ import { RolesModule } from './routes/roles/role.module.js';
     LanguageModule,
     PermissionModule,
     RolesModule,
+    ProfileModule,
   ],
   controllers: [AppController],
   providers: [

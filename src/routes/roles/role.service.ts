@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { RoleReposistory } from './role.repo.js';
 import { CreateRoleType, GetRoleParamsType, GetRolesParamsType, UpdateRoleType } from './role.model.js';
-import { RoleAlreadyExistsException, RoleNotFoundException } from './role.error.js';
-
+import { RoleAlreadyExistsException, RoleNotFoundException, ForbiddenDeleteRoleException } from './role.error.js';
+import { roleName } from '../../shared/constants/role.constant.js';
 @Injectable()
 export class RolesService {
     constructor(private readonly roleRepo: RoleReposistory) { }
@@ -58,6 +58,9 @@ export class RolesService {
         const role = await this.roleRepo.getById(id)
         if (!role) {
             throw RoleNotFoundException()
+        }
+        if ([roleName.Admin, roleName.User, roleName.Seller].includes(role.name)) {
+            throw ForbiddenDeleteRoleException()
         }
         await this.roleRepo.delete(id, userId, isHard)
         return {

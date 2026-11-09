@@ -2,7 +2,7 @@ import 'dotenv/config'
 import { PrismaPg } from '@prisma/adapter-pg'
 import { PrismaClient } from '../src/generated/prisma/client.js'
 import { roleName } from '~/shared/constants/role.constant.js'
-import { HashsingService } from '~/shared/services/hashsing.service.js'
+import { HashingService } from '~/shared/services/hashing.service.js'
 const adapter = new PrismaPg({
     connectionString: process.env.DATABASE_URL
 })
@@ -34,7 +34,7 @@ const main = async () => {
             name: roleName.Admin
         }
     })
-    const hashingService = new HashsingService()
+    const hashingService = new HashingService()
     const hasPassword = await hashingService.hash(process.env.ADMIN_PASSWORD!)
     const adminUser = await prisma.user.create({
         data: {
