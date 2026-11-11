@@ -6,7 +6,6 @@ import {
   UnauthorizedException,
 } from '@nestjs/common'
 import { PrismaService } from '~/shared/services/prisma.service.js'
-import { RolesService } from './roles.service.js'
 import { TokenService } from '~/shared/services/token.service.js'
 import { HashingService } from '~/shared/services/hashing.service.js'
 import { generateOTP } from '~/shared/helpers.js'
@@ -26,20 +25,21 @@ import { addMilliseconds } from 'date-fns'
 import { TypeOfVerificationCode } from '~/shared/constants/auth.constant.js'
 import { BrevoEmailService } from '~/shared/services/BrevoEmail.service.js'
 import { AccessTokenPayLoadCreate } from '~/shared/types/token.type.js'
-import crypto from 'crypto'
 import { DisableTwoFactorDTO } from './auth.dto.js'
 import { TwoFactorAuthService } from '~/shared/services/2fa.service.js'
+import { roleName } from '~/shared/constants/role.constant.js'
+import { RolesRepository } from '~/shared/reposistory/shared-get-role.js'
 @Injectable()
 export class AuthService {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly hashingService: HashingService,
-    private readonly rolesService: RolesService,
     private readonly tokenService: TokenService,
     private readonly authRepository: AuthRepository,
     private readonly sharedUserRepo: SharedUserRepo,
     private readonly brevoEmailService: BrevoEmailService,
     private readonly twoFactorAuthService: TwoFactorAuthService,
+    private readonly rolesRepository: RolesRepository
   ) { }
 
   async register(body: RegisterBodyType) {
@@ -53,7 +53,7 @@ export class AuthService {
     if (!vertificationCode || vertificationCode.expiresAt < new Date()) {
       throw new BadRequestException('Invalid verification code')
     }
-    const clientRoleId = await this.rolesService.getClientRoleId()
+    const clientRoleId = await this.rolesRepository.getRoleId(roleName.User)
     const hashPassword = await this.hashingService.hash(body.password)
     const { confirmPassword, code, ...userData } = body
     const user = await this.authRepository.createUser({

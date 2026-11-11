@@ -3,11 +3,11 @@ import { OAuth2Client } from 'google-auth-library'
 import envConfig from '~/shared/config.js'
 import { GoogleBodyType } from './auth.model.js'
 import { AuthRepository } from './auth.repo.js'
-import { RolesService } from './roles.service.js'
 import { AuthService } from './auth.service.js'
 import { HashingService } from '~/shared/services/hashing.service.js'
 import { randomUUID } from 'crypto'
 import { roleName } from '~/shared/constants/role.constant.js'
+import { RolesRepository } from '~/shared/reposistory/shared-get-role.js'
 @Injectable()
 export class GoogleService {
   private readonly oauth2Client = new OAuth2Client(
@@ -18,8 +18,8 @@ export class GoogleService {
   constructor(
     private readonly authRepository: AuthRepository,
     private readonly hashsingService: HashingService,
-    private readonly rolesService: RolesService,
     private readonly authService: AuthService,
+    private readonly rolesRepository: RolesRepository
   ) { }
   getAuthorizationUrl({ userAgent, ip }: GoogleBodyType) {
     const scope = [
@@ -80,7 +80,7 @@ export class GoogleService {
       email: payload.email,
     })
     if (!user) {
-      const clientRoleId = await this.rolesService.getClientRoleId()
+      const userRoleId = await this.rolesRepository.getRoleId(roleName.User)
       const password = randomUUID()
       const hashPassword = await this.hashsingService.hash(password)
 
@@ -89,7 +89,7 @@ export class GoogleService {
         name: payload.name ?? 'Google User',
         password: hashPassword,
         phoneNumber: '',
-        roleId: clientRoleId as number,
+        roleId: userRoleId as number,
         avatar: payload.picture ?? null,
       })
       user = await this.authRepository.findUniqueUserWithRole({

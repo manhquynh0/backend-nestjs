@@ -13,6 +13,7 @@ import { LanguageModule } from './routes/language/language.module.js'
 import { PermissionModule } from './routes/permission/permission.module.js'
 import { RolesModule } from './routes/roles/role.module.js';
 import { ProfileModule } from './routes/profile/profile.module.js';
+import { UserModule } from './routes/users/user.module.js';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -24,6 +25,7 @@ import { ProfileModule } from './routes/profile/profile.module.js';
     PermissionModule,
     RolesModule,
     ProfileModule,
+    UserModule,
   ],
   controllers: [AppController],
   providers: [

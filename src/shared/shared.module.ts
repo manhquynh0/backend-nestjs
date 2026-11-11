@@ -11,6 +11,7 @@ import { SharedUserRepo } from './reposistory/shared-user-repo.js'
 import { BrevoEmailService } from './services/BrevoEmail.service.js'
 import { TwoFactorAuthService } from './services/2fa.service.js'
 import { PermissionGuard } from './guards/permission.guard.js'
+import { RolesRepository } from './reposistory/shared-get-role.js'
 const shareService = [
   PrismaService,
   HashingService,
@@ -18,6 +19,7 @@ const shareService = [
   SharedUserRepo,
   BrevoEmailService,
   TwoFactorAuthService,
+  RolesRepository
 ]
 @Global()
 @Module({

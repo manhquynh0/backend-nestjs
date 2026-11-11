@@ -1,6 +1,5 @@
 import z from 'zod'
 import { UserActive } from '../constants/auth.constant.js'
-
 export const UserSchema = z.object({
   id: z.number(),
   name: z.string().min(3).max(50),
@@ -17,4 +16,5 @@ export const UserSchema = z.object({
   updatedById: z.number().nullable(),
   deletedAt: z.date().nullable(),
 })
+
 export type UserType = z.infer<typeof UserSchema>
